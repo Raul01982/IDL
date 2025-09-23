@@ -233,10 +233,10 @@ elif option == 'MGB' :
             qr_img.save(buffer, format="PNG")
             buffer.seek(0)
             st.download_button(
-            label="Télécharger le QR Code",
-            data=buffer,
-            file_name=f"QR_Code_{MGB}.png",
-            mime="image/png"
+                label="Télécharger le QR Code",
+                data=buffer,
+                file_name=f"QR_Code_{MGB}.png",
+                mime="image/png"
             )
 
         # --- bouton pour effacer le QR Code ---
