@@ -229,13 +229,16 @@ elif option == 'MGB' :
         
         # --- bouton pour télécharger le QR code ---
         with col1:
+            buffer = BytesIO()
+            qr_img.save(buffer, format="PNG")
+            buffer.seek(0)
             st.download_button(
             label="Télécharger le QR Code",
-            data=BytesIO(qr_img.tobytes()),
+            data=buffer,
             file_name=f"QR_Code_{MGB}.png",
             mime="image/png"
             )
-        
+
         # --- bouton pour effacer le QR Code ---
         with col2:
             st.button("Effacer le QR Code")
