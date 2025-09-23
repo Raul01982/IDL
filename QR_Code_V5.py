@@ -161,9 +161,9 @@ if option == "Emplacement":
             qr_img = qrcode.make(contenu_qr).convert("RGB")
             qr_img = qr_img.resize((qr_width, qr_height))
             if nb_qr_format == "Grand Format":
-                combined.paste(qr_img, (-20, -20))
+                combined.paste(qr_img, (0, 0))
             else:
-                combined.paste(qr_img, (-10, -10))
+                combined.paste(qr_img, (0, 0))
 
             # --- Texte centré horizontalement et verticalement ---
             try:
