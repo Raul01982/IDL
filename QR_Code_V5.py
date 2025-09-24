@@ -257,13 +257,17 @@ tabs = {
 }
 
 def main():
-    st.sidebar.image(r"C:\Users\aurel\Desktop\dossier Id Logistics\logo IDL.jpg", use_container_width=True)
+    
+    IMAGE_PATH_1 = Path(__file__).parent / "images" / "logo_IDL.jpg"
+    st.sidebar.image(str(IMAGE_PATH_1), use_container_width=True)
     st.sidebar.header("Navigation")
     selected_tab = st.sidebar.radio("", list(tabs.keys()))
     tabs[selected_tab]()
 
     # Sidebar images
-    st.sidebar.image(r"C:\Users\aurel\Desktop\dossier Id Logistics\Logo_Metro.webp", use_container_width=True)
+    
+    IMAGE_PATH_2 = Path(__file__).parent / "images" / "Logo_Metro.webp"
+    st.sidebar.image(str(IMAGE_PATH_2), use_container_width=True)
     
     # Sidebar color
     st.markdown("""
