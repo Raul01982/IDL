@@ -57,5 +57,7 @@ deep-translator==1.11.1
 langdetect==1.0.9
 qrcode==7.4.2
 reportlab==4.1.0
+python-barcode
+
 
 
