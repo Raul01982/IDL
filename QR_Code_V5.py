@@ -16,7 +16,7 @@ def tab_QR_Codes():
     st.title("QR Codes et Code Barre")
 
     # --- Listes ---
-    Liste_choix_Qr_code = ['Emplacement', 'QR Code MGB', 'EAN']
+    Liste_choix_Qr_code = ['Vide','Emplacement', 'QR Code MGB', 'EAN']
     Liste_allée = {
         "Ambiant": ['1','2','3','4','5','6','7','8','9','10','11','12'],
         "Frais": ['19','20','21','22','23','24','25','26'],
@@ -31,7 +31,10 @@ def tab_QR_Codes():
     # Choix du type de QR Code
     option = st.selectbox('Choix type de QR Code ou Code Barre :', options= Liste_choix_Qr_code)
     
-    if option == "Emplacement":
+    if option == "Vide":
+        st.warning('Tu dois choisir une option pour générer un QR Code ou un Code Barre !')
+        
+    elif option == "Emplacement":
         
         # --- Choix du format ---
         nb_qr_format = st.radio("Choisir le format :", ["Grand Format", "Petit Format"])
