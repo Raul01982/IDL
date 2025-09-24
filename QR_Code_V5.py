@@ -35,8 +35,7 @@ def tab_QR_Codes():
         st.warning('Tu dois choisir une option pour générer un QR Code ou un Code Barre !')
         
     elif option == "Emplacement":
-        
-        # --- Choix du format ---
+    # --- Choix du format ---
         nb_qr_format = st.radio("Choisir le format :", ["Grand Format", "Petit Format"])
 
         if nb_qr_format == "Grand Format":
@@ -53,15 +52,15 @@ def tab_QR_Codes():
             frame_width = (A4[0] - 130) / 2
             frame_height = 130
             spacing = 30
-        
-        # Définir le chemin de la police
+
+        # --- Définir le chemin de la police ---
         FONT_PATH = Path(__file__).parent / "fonts" / "DejaVuSans-Bold.ttf"
         try:
             font = ImageFont.truetype(str(FONT_PATH), font_size)
         except Exception as e:
             st.error(f"Erreur police: {e}")
             font = ImageFont.load_default()
-        
+
         # --- Sélection des QR Codes ---
         st.subheader("Choisir les QR Codes")
         qr_infos = []
@@ -92,14 +91,9 @@ def tab_QR_Codes():
             c = canvas.Canvas(pdf_buffer, pagesize=A4)
             page_width, page_height = A4
 
-            if nb_qr_format == "Grand Format":
-                margin_top = 10
-                margin_bottom = 10
-                margin_left = 10
-            else:
-                margin_top = 30
-                margin_bottom = 30
-                margin_left = 50
+            margin_top = 10 if nb_qr_format == "Grand Format" else 30
+            margin_bottom = 10 if nb_qr_format == "Grand Format" else 30
+            margin_left = 10 if nb_qr_format == "Grand Format" else 50
 
             usable_height = page_height - margin_top - margin_bottom
             rows_per_page = max(1, int((usable_height + spacing) // (frame_height + spacing)))
@@ -119,6 +113,7 @@ def tab_QR_Codes():
                 x = margin_left + col * (frame_width + spacing)
                 y = top_y - (row * (frame_height + spacing)) - frame_height
 
+                # Préfixe selon cellule
                 prefix = ""
                 if info["Cellule"] in ["Ambiant", "Frais", "FL"]:
                     prefix = "MEAT_SPECIAL_HANDING-"
@@ -154,9 +149,10 @@ def tab_QR_Codes():
                 qr_img = qr_img.resize((qr_width, qr_height))
                 combined.paste(qr_img, (-20, -20) if nb_qr_format == "Grand Format" else (-10, -10))
 
+                # Utiliser la police embarquée pour Render
                 try:
-                    font = ImageFont.truetype("arialbd.ttf", font_size)
-                except:
+                    font = ImageFont.truetype(str(FONT_PATH), font_size)
+                except Exception as e:
                     font = ImageFont.load_default()
 
                 bbox = draw.textbbox((0, 0), texte_affiche, font=font)
