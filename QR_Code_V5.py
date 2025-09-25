@@ -304,20 +304,15 @@ def tab_QR_Codes():
             else:
                 st.error("Le MGB doit avoir 11 ou 12 chiffres.")
 
-        # Confirmation pour 11 chiffres
+        # Si confirmation pour 11 chiffres
         if st.session_state['confirm_11']:
-            with st.form("confirm_form"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    yes = st.form_submit_button("Oui, générer le QR Code")
-                with col2:
-                    no = st.form_submit_button("Non, corriger le MGB")
-                
-                if yes:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Oui, générer le QR Code"):
                     generate_qr(st.session_state['MGB'])
                     st.session_state['confirm_11'] = False
-                    st.experimental_rerun()  # force la disparition des boutons
-                elif no:
+            with col2:
+                if st.button("Non, corriger le MGB"):
                     st.info("Merci de remplir le champ correctement.")
                     st.session_state['confirm_11'] = False
         
