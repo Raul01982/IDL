@@ -25,33 +25,52 @@ def tab_QR_Codes():
         "Marée": ['50','51','52','53']
     }
     Liste_rangée = [str(i) for i in range(1, 41)]
-    Liste_niveau = ['A1','A2','A3','A4','B1','C1','D1']
+    Liste_niveau = {
+        "Ambiant": ['A1','A2','A3','A4','B1','C1','D1'],
+        "Frais": ['A1','A2','A3','A4','B1'],
+        "FL": ['A1','A2','A3','A4','B1'],
+        "Surgelé": ['A1','A2','A3','A4','B1','C1','D1'],
+        "Marée": ['A1','A2','A3','A4']
+    }
     Liste_emplacement = [str(i) for i in range(1, 11)]
 
     # Choix du type de QR Code
     option = st.selectbox('Choix type de QR Code ou Code Barre :', options= Liste_choix_Qr_code)
     
-    if option == "Vide":
-        st.warning('Tu dois choisir une option pour générer un QR Code ou un Code Barre !')
-        
-    elif option == "Emplacement":
-    # --- Choix du format ---
+    if option == "Emplacement":
+        # --- Choix du format ---
         nb_qr_format = st.radio("Choisir le format :", ["Grand Format", "Petit Format"])
-
-        if nb_qr_format == "Grand Format":
-            qr_count = st.selectbox("Nombre de QR Codes :", range(1, 4))  # 1 à 3
-            cols_per_row = 1
-            font_size = 38
-            frame_width = A4[0] - 20
-            frame_height = 273
-            spacing = 1
-        else:
-            qr_count = st.selectbox("Nombre de QR Codes :", range(1, 11))  # 1 à 10
-            cols_per_row = 2
-            font_size = 12
-            frame_width = (A4[0] - 130) / 2
-            frame_height = 130
-            spacing = 30
+        nb_qr_serie = st.radio("Choisir types :", ["Unités", "Série"])
+        if nb_qr_serie == "Unités":
+            if nb_qr_format == "Grand Format":
+                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 4))  # 1 à 3
+                cols_per_row = 1
+                font_size = 38
+                frame_width = A4[0] - 20
+                frame_height = 273
+                spacing = 1
+            else:
+                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 11))  # 1 à 10
+                cols_per_row = 2
+                font_size = 12
+                frame_width = (A4[0] - 130) / 2
+                frame_height = 130
+                spacing = 30
+        else :
+            if nb_qr_format == "Grand Format":
+                qr_count = 3
+                cols_per_row = 1
+                font_size = 38
+                frame_width = A4[0] - 20
+                frame_height = 273
+                spacing = 1
+            else:
+                qr_count = 10
+                cols_per_row = 2
+                font_size = 12
+                frame_width = (A4[0] - 130) / 2
+                frame_height = 130
+                spacing = 30
 
         # --- Définir le chemin de la police ---
         FONT_PATH = Path(__file__).parent / "fonts" / "DejaVuSans-Bold.ttf"
@@ -64,26 +83,79 @@ def tab_QR_Codes():
         # --- Sélection des QR Codes ---
         st.subheader("Choisir les QR Codes")
         qr_infos = []
-
-        for i in range(qr_count):
-            st.markdown(f"**QR Code #{i+1}**")
-            cellule = st.selectbox(f"Cellule", options=list(Liste_allée.keys()), key=f"Cellule_{i}")
-            col1, col2, col3, col4 = st.columns(4)
+        
+        if nb_qr_serie == "Unités":
+            for i in range(qr_count):
+                st.markdown(f"**QR Code #{i+1}**")
+                cellule = st.selectbox(f"Cellule", options=list(Liste_allée.keys()), key=f"Cellule_{i}")
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    allée = st.selectbox(f"Allée", options=Liste_allée[cellule], key=f"Allée_{i}")
+                with col2:
+                    rangée = st.selectbox(f"Rangée", options=Liste_rangée, key=f"Rangée_{i}")
+                with col3:
+                    niveau = st.selectbox(f"Niveau", options=Liste_niveau, key=f"Niveau_{i}")
+                with col4:
+                    colonne = st.selectbox(f"Colonne", options=Liste_emplacement, key=f"Colonne_{i}")
+                qr_infos.append({
+                    "Cellule": cellule,
+                    "Allée": allée,
+                    "Rangée": rangée,
+                    "Niveau": niveau,
+                    "Colonne": colonne
+                })
+        
+        else:
+            col1, col2, col3 = st.columns(3)
+            # Sélections communes
             with col1:
-                allée = st.selectbox(f"Allée", options=Liste_allée[cellule], key=f"Allée_{i}")
+                cellule = st.selectbox("Cellule", options=list(Liste_allée.keys()), key="Cellule")
             with col2:
-                rangée = st.selectbox(f"Rangée", options=Liste_rangée, key=f"Rangée_{i}")
+                allée = st.selectbox("Allée", options=Liste_allée[cellule], key="Allée")
             with col3:
-                niveau = st.selectbox(f"Niveau", options=Liste_niveau, key=f"Niveau_{i}")
-            with col4:
-                colonne = st.selectbox(f"Colonne", options=Liste_emplacement, key=f"Colonne_{i}")
-            qr_infos.append({
-                "Cellule": cellule,
-                "Allée": allée,
-                "Rangée": rangée,
-                "Niveau": niveau,
-                "Colonne": colonne
-            })
+                rangée = st.selectbox("Rangée", options=Liste_rangée, key="Rangée")
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"**Choisi les Niveaux**")
+                niveau_start = st.selectbox("Niveau début", options=Liste_niveau[cellule], key="Niveau_start")
+                niveau_end = st.selectbox("Niveau fin", options=Liste_niveau[cellule], key="Niveau_end")
+            with col3:
+                st.markdown(f"**Choisi les Colonnes**")
+                col_start = st.selectbox("Colonne début", options=Liste_emplacement, key="Colonne_start")
+                col_end = st.selectbox("Colonne fin", options=Liste_emplacement, key="Colonne_end")
+
+            # Construire les plages
+            niveaux = Liste_niveau[cellule]
+            colonnes = Liste_emplacement
+
+            try:
+                start_idx_niv = niveaux.index(niveau_start)
+                end_idx_niv = niveaux.index(niveau_end)
+                start_idx_col = colonnes.index(col_start)
+                end_idx_col = colonnes.index(col_end)
+
+                niveaux_range = niveaux[min(start_idx_niv, end_idx_niv): max(start_idx_niv, end_idx_niv)+1]
+                colonnes_range = colonnes[min(start_idx_col, end_idx_col): max(start_idx_col, end_idx_col)+1]
+
+                total_etiquettes = len(niveaux_range) * len(colonnes_range)
+
+                if total_etiquettes > qr_count:
+                    st.error(f"⚠️ Trop d’étiquettes ({total_etiquettes}), maximum autorisé : {qr_count}")
+                else:
+                    for niv in niveaux_range:
+                        for col in colonnes_range:
+                            qr_infos.append({
+                                "Cellule": cellule,
+                                "Allée": allée,
+                                "Rangée": rangée,
+                                "Niveau": niv,
+                                "Colonne": col
+                            })
+                            
+
+            except ValueError:
+                st.error("Erreur : les valeurs choisies ne sont pas dans les listes disponibles.")
 
         # --- Génération PDF ---
         if st.button("Générer le PDF A4"):
