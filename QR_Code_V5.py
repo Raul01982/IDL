@@ -284,28 +284,27 @@ def tab_QR_Codes():
         st.subheader("EAN :")
         EAN_input = st.text_input("Entrer le code EAN")
 
-        if st.button("Générer le code barre"):
-                if EAN_input:  # seulement si l’utilisateur a saisi quelque chose
-                    try:
-                        if not EAN_input.isdigit() or len(EAN_input) != 13:
-                            st.error("Le code EAN doit être un chiffre de 13 chiffres.")
-                        else:
-                            # Créer le code barre EAN13 avec ImageWriter
-                            ean = EAN13(EAN_input, writer=ImageWriter())
+        iEAN_input = st.text_input("Entrez un code EAN (13 chiffres)")
 
-                            # Sauvegarder dans un buffer
-                            buffer = BytesIO()
-                            ean.write(buffer)
-                            buffer.seek(0)
+        if EAN_input:  # seulement si l’utilisateur a saisi quelque chose
+            if not EAN_input.isdigit() or len(EAN_input) != 13:
+                # Cas invalide → on sort ici, aucune autre ligne ne s'exécute
+                st.error("Le code EAN doit être un chiffre de 13 chiffres.")
+            
+            else:
+                try:
+                    # Cas valide → génération du code-barres
+                    ean = EAN13(EAN_input, writer=ImageWriter())
 
-                            # Afficher le code barre dans Streamlit
-                            st.image(buffer, caption=f"Code barre du EAN {EAN_input}", use_container_width=True)
+                    buffer = BytesIO()
+                    ean.write(buffer)
+                    buffer.seek(0)
 
-                    except ValueError as e:
-                        st.error(str(e))        
+                    st.image(buffer, caption=f"Code barre du EAN {EAN_input}", use_container_width=True)
 
-                    except Exception:
-                        st.error("Une erreur est survenue lors de la génération du code barre.")
+                except Exception as e:
+                    # Ici on intercepte toute autre erreur
+                    st.error("Une erreur est survenue lors de la génération du code barre.")
 
                 # Boutons pour téléchargement et effacer
                 col1, col2 = st.columns(2)
