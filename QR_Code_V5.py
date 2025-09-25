@@ -16,7 +16,7 @@ def tab_QR_Codes():
     st.title("QR Codes et Code Barre")
 
     # --- Listes ---
-    Liste_choix_Qr_code = ['Vide','Emplacement', 'QR Code MGB', 'EAN']
+    Liste_choix_Qr_code = ['Vide','Emplacement', 'QR Code MGB','Autres QR Codes', 'EAN']
     Liste_allée = {
         "Ambiant": ['1','2','3','4','5','6','7','8','9','10','11','12'],
         "Frais": ['19','20','21','22','23','24','25','26'],
@@ -315,7 +315,43 @@ def tab_QR_Codes():
                 if st.button("Non, corriger le MGB"):
                     st.info("Merci de remplir le champ correctement.")
                     st.session_state['confirm_11'] = False
-        
+    
+    
+    elif option == 'Autres QR Codes':
+
+        st.title("Autres QR Codes")
+
+        # Champ texte pour saisir l'URL ou le texte
+        user_input = st.text_input("Entrez le texte ou l'URL à encoder :")
+
+        if user_input:
+            # Générer le QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(user_input)
+            qr.make(fit=True)
+
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            # Afficher le QR code dans Streamlit
+            buf = BytesIO()
+            img.save(buf, format="PNG")
+            st.image(buf.getvalue(), caption="Votre QR Code")
+
+            # Bouton de téléchargement
+            st.download_button(
+                label="📥 Télécharger le QR Code",
+                data=buf.getvalue(),
+                file_name="qrcode.png",
+                mime="image/png"
+            )
+
+
+
     elif option == 'EAN':
         st.subheader("EAN :")
         
