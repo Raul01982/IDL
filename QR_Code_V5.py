@@ -192,7 +192,7 @@ def tab_QR_Codes():
                 elif info["Cellule"] == "Marée":
                     prefix = "FISH-"
                 elif info["Cellule"] == "Surgelé":
-                    prefix = "DEEP-FROZEN-"
+                    prefix = "DEEP_FROZEN-"
 
                 texte_affiche = f"{info['Allée']}-{info['Rangée']}-{info['Niveau']}-{info['Colonne']}"
                 contenu_qr = prefix + texte_affiche
