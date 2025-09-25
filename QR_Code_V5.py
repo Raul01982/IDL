@@ -259,35 +259,9 @@ def tab_QR_Codes():
 
         if st.button("Générer le QR Code"):
             if not MGB.isdigit():
-                st.error("Le MGB doit être un nombre de 12 Chiffres.")
-            elif 11 <= len(MGB) <= 12 :
-                st.error("Es-tu sur que ton MGB n'a pas 12 chiffres.")
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button('Oui !'):
-                        qr_img = qrcode.make(MGB).convert("RGB")
-                        qr_img = qr_img.resize((250, 250))
-                        st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
-
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            buffer = BytesIO()
-                            qr_img.save(buffer, format="PNG")
-                            buffer.seek(0)
-                            st.download_button(
-                                label="Télécharger le QR Code",
-                                data=buffer,
-                                file_name=f"QR_Code_{MGB}.png",
-                                mime="image/png"
-                            )
-                        with col2:
-                            st.button("Effacer le QR Code")
-                            MGB = ""
-                with col2:
-                    if st.button('Non'):   
-                        st.error("Merci de remplir le champs correctement.")    
-
-            else:
+                st.error("Le MGB doit être un nombre.")
+            elif len(MGB) == 12:
+                # QR Code normal pour 12 chiffres
                 qr_img = qrcode.make(MGB).convert("RGB")
                 qr_img = qr_img.resize((250, 250))
                 st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
@@ -304,8 +278,33 @@ def tab_QR_Codes():
                         mime="image/png"
                     )
                 with col2:
-                    st.button("Effacer le QR Code")
-                    MGB = ""
+                    if st.button("Effacer le QR Code"):
+                        st.session_state['MGB'] = ""
+
+            elif len(MGB) == 11:
+                # Demande de confirmation pour 11 chiffres
+                st.warning("Es-tu sûr que ton MGB n'a pas 12 chiffres ?")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("Oui, générer le QR Code"):
+                        qr_img = qrcode.make(MGB).convert("RGB")
+                        qr_img = qr_img.resize((250, 250))
+                        st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
+
+                        buffer = BytesIO()
+                        qr_img.save(buffer, format="PNG")
+                        buffer.seek(0)
+                        st.download_button(
+                            label="Télécharger le QR Code",
+                            data=buffer,
+                            file_name=f"QR_Code_{MGB}.png",
+                            mime="image/png"
+                        )
+                with col2:
+                    if st.button("Non"):
+                        st.info("Merci de remplir le champ correctement.")
+            else:
+                st.error("Le MGB doit avoir 12 chiffres.")
         
     elif option == 'EAN':
         st.subheader("EAN :")
