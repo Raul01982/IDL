@@ -83,7 +83,7 @@ def tab_QR_Codes():
         # --- Sélection des QR Codes ---
         st.subheader("Choisir les QR Codes")
         qr_infos = []
-        
+
         if nb_qr_serie == "Unités":
             for i in range(qr_count):
                 st.markdown(f"**QR Code #{i+1}**")
@@ -285,19 +285,24 @@ def tab_QR_Codes():
         EAN_input = st.text_input("Entrer le code EAN")
 
         if st.button("Générer le code barre"):
-                if not EAN_input.isdigit() or len(EAN_input) != 13:
-                        st.error("Le code EAN doit être un chiffre de 13 digits.")
-                else:
-                        # Créer le code barre EAN13 avec ImageWriter
-                        ean = EAN13(EAN_input, writer=ImageWriter())
-                        
-                        # Sauvegarder dans un buffer
-                        buffer = BytesIO()
-                        ean.write(buffer)
-                        buffer.seek(0)
+                if EAN_input:  # seulement si l’utilisateur a saisi quelque chose
+                    try:
+                        if not EAN_input.isdigit() or len(EAN_input) != 13:
+                            st.error("Le code EAN doit être un chiffre de 13 chiffres.")
+                        else:
+                            # Créer le code barre EAN13 avec ImageWriter
+                            ean = EAN13(EAN_input, writer=ImageWriter())
 
-                        # Afficher le code barre dans Streamlit
-                        st.image(buffer, caption=f"Code barre du EAN {EAN_input}", use_container_width=True)
+                            # Sauvegarder dans un buffer
+                            buffer = BytesIO()
+                            ean.write(buffer)
+                            buffer.seek(0)
+
+                            # Afficher le code barre dans Streamlit
+                            st.image(buffer, caption=f"Code barre du EAN {EAN_input}", use_container_width=True)
+
+                    except Exception:
+                        st.error("Une erreur est survenue lors de la génération du code barre.")
 
                 # Boutons pour téléchargement et effacer
                 col1, col2 = st.columns(2)
