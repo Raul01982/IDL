@@ -321,34 +321,44 @@ def tab_QR_Codes():
 
         st.title("Autres QR Codes")
 
-        # Champ texte pour saisir l'URL ou le texte
-        user_input = st.text_input("Entrez le texte ou l'URL à encoder :")
+        # Initialiser session_state
+        if "MGB" not in st.session_state:
+            st.session_state["MGB"] = ""
 
-        if user_input:
-            # Générer le QR code
+        user_input = st.text_input("Entrez le texte ou l'URL :", st.session_state["MGB"])
+
+        # Bouton Générer
+        if st.button("Générer le QR Code"):
+            st.session_state["MGB"] = user_input  # on garde la valeur en mémoire
+
+        # Affichage du QR Code si on a une valeur
+        if st.session_state["MGB"]:
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
                 box_size=10,
                 border=4,
             )
-            qr.add_data(user_input)
+            qr.add_data(st.session_state["MGB"])
             qr.make(fit=True)
-
             img = qr.make_image(fill_color="black", back_color="white")
 
-            # Afficher le QR code dans Streamlit
+            
             buf = BytesIO()
             img.save(buf, format="PNG")
             st.image(buf.getvalue(), caption="Votre QR Code")
 
-            # Bouton de téléchargement
             st.download_button(
                 label="📥 Télécharger le QR Code",
                 data=buf.getvalue(),
                 file_name="qrcode.png",
                 mime="image/png"
             )
+            # Bouton Effacer
+            if st.button("Effacer le QR Code"):
+                st.session_state["MGB"] = ""
+                st.rerun()
+
 
 
 
