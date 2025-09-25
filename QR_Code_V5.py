@@ -259,9 +259,9 @@ def tab_QR_Codes():
 
         if st.button("Générer le QR Code"):
             if not MGB.isdigit():
-                st.error("Le MGB doit être un chiffre de 12 digits.")
+                st.error("Le MGB doit être un nombre de 12 Chiffres.")
             elif 11 <= len(MGB) <= 12 :
-                st.error("Es- tu sur que ton MGB n'a pas 12 chiffres.")
+                st.error("Es-tu sur que ton MGB n'a pas 12 chiffres.")
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button('Oui !'):
@@ -284,7 +284,7 @@ def tab_QR_Codes():
                             st.button("Effacer le QR Code")
                             MGB = ""
                 with col2:
-                    elif st.button('Non'):   
+                    if st.button('Non'):   
                         st.error("Merci de remplir le champs correctement.")    
 
             else:
@@ -315,7 +315,7 @@ def tab_QR_Codes():
         if st.button("Générer le Code Barre"): 
             if not EAN_input.isdigit() or len(EAN_input) != 13:
                 # Cas invalide → on sort ici, aucune autre ligne ne s'exécute
-                st.error("Le code EAN doit être un chiffre de 13 chiffres.")
+                st.error("Le code EAN doit être un nombre de 13 chiffres.")
             
             else:
                 try:
