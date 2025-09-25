@@ -41,14 +41,14 @@ def tab_QR_Codes():
         if nb_qr_format == "Grand Format":
             qr_count = st.selectbox("Nombre de QR Codes :", range(1, 4))  # 1 à 3
             cols_per_row = 1
-            font_size = 48
+            font_size = 42
             frame_width = A4[0] - 20
             frame_height = 273
             spacing = 1
         else:
             qr_count = st.selectbox("Nombre de QR Codes :", range(1, 11))  # 1 à 10
             cols_per_row = 2
-            font_size = 20
+            font_size = 16
             frame_width = (A4[0] - 130) / 2
             frame_height = 130
             spacing = 30
@@ -136,8 +136,12 @@ def tab_QR_Codes():
                     text_bg_color = "white"
 
                 combined = Image.new("RGB", (int(frame_width), int(frame_height)), "white")
-                qr_width = int(frame_width * 0.55)
-                qr_height = int(frame_height * 1.15)
+                if nb_qr_format == "Grand Format" :
+                    qr_width = int(frame_width * 0.55)
+                    qr_height = int(frame_height * 1.15)
+                else :
+                    qr_width = int(frame_width * 0.62)
+                    qr_height = int(frame_height * 1.15)
                 qr_offset = -20 if nb_qr_format == "Grand Format" else -10
                 text_x0 = max(qr_width + qr_offset, 0)
                 text_x1 = frame_width
