@@ -301,6 +301,9 @@ def tab_QR_Codes():
                             # Afficher le code barre dans Streamlit
                             st.image(buffer, caption=f"Code barre du EAN {EAN_input}", use_container_width=True)
 
+                    except ValueError as e:
+                        st.error(str(e))        
+
                     except Exception:
                         st.error("Une erreur est survenue lors de la génération du code barre.")
 
