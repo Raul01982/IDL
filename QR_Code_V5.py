@@ -188,7 +188,7 @@ def tab_QR_Codes():
                 # Préfixe selon cellule
                 prefix = ""
                 if info["Cellule"] in ["Ambiant", "Frais", "FL"]:
-                    prefix = "MEAT_SPECIAL_HANDING-"
+                    prefix = "MEAT_SPECIAL_HANDLING-"
                 elif info["Cellule"] == "Marée":
                     prefix = "FISH-"
                 elif info["Cellule"] == "Surgelé":
