@@ -258,8 +258,35 @@ def tab_QR_Codes():
         MGB = st.text_input("Entrer le numéro du MGB")
 
         if st.button("Générer le QR Code"):
-            if not MGB.isdigit() or len(MGB) != 12:
+            if not MGB.isdigit():
                 st.error("Le MGB doit être un chiffre de 12 digits.")
+            elif 11 <= len(MGB) <= 12 :
+                st.error("Es- tu sur que ton MGB n'a pas 12 chiffres.")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button('Oui !'):
+                        qr_img = qrcode.make(MGB).convert("RGB")
+                        qr_img = qr_img.resize((250, 250))
+                        st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
+
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            buffer = BytesIO()
+                            qr_img.save(buffer, format="PNG")
+                            buffer.seek(0)
+                            st.download_button(
+                                label="Télécharger le QR Code",
+                                data=buffer,
+                                file_name=f"QR_Code_{MGB}.png",
+                                mime="image/png"
+                            )
+                        with col2:
+                            st.button("Effacer le QR Code")
+                            MGB = ""
+                with col2:
+                    elif st.button('Non'):   
+                        st.error("Merci de remplir le champs correctement.")    
+
             else:
                 qr_img = qrcode.make(MGB).convert("RGB")
                 qr_img = qr_img.resize((250, 250))
@@ -282,11 +309,10 @@ def tab_QR_Codes():
         
     elif option == 'EAN':
         st.subheader("EAN :")
-        EAN_input = st.text_input("Entrer le code EAN")
+        
+        EAN_input = st.text_input("Entrez un code EAN (13 chiffres)")
 
-        iEAN_input = st.text_input("Entrez un code EAN (13 chiffres)")
-
-        if EAN_input:  # seulement si l’utilisateur a saisi quelque chose
+        if st.button("Générer le Code Barre"): 
             if not EAN_input.isdigit() or len(EAN_input) != 13:
                 # Cas invalide → on sort ici, aucune autre ligne ne s'exécute
                 st.error("Le code EAN doit être un chiffre de 13 chiffres.")
