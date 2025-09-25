@@ -264,7 +264,13 @@ def tab_QR_Codes():
             st.session_state['confirm_11'] = False
 
         st.subheader("MGB :")
-        st.session_state['MGB'] = st.text_input("Entrer le numéro du MGB", st.session_state['MGB'])
+        
+        st.session_state['MGB'] = st.text_input(
+            "Entrer le numéro du MGB",
+            value=st.session_state.get('MGB', ''),
+            key="mgb_input"
+        )
+
 
         def generate_qr(MGB):
             qr_img = qrcode.make(MGB).convert("RGB")
