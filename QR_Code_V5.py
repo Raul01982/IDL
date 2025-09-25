@@ -94,7 +94,7 @@ def tab_QR_Codes():
                 with col2:
                     rangée = st.selectbox(f"Rangée", options=Liste_rangée, key=f"Rangée_{i}")
                 with col3:
-                    niveau = st.selectbox(f"Niveau", options=Liste_niveau, key=f"Niveau_{i}")
+                    niveau = st.selectbox(f"Niveau", options=Liste_niveau[cellule], key=f"Niveau_{i}")
                 with col4:
                     colonne = st.selectbox(f"Colonne", options=Liste_emplacement, key=f"Colonne_{i}")
                 qr_infos.append({
