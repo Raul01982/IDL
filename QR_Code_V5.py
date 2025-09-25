@@ -254,9 +254,7 @@ def tab_QR_Codes():
             )
 
     elif option == 'QR Code MGB':
-        st.subheader("MGB :")
-        MGB = st.text_input("Entrer le numéro du MGB")
-
+        
         # Initialisation des états si pas encore définis
         if 'MGB' not in st.session_state:
             st.session_state['MGB'] = ""
