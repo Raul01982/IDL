@@ -257,54 +257,60 @@ def tab_QR_Codes():
         st.subheader("MGB :")
         MGB = st.text_input("Entrer le numéro du MGB")
 
+        # Initialisation des états si pas encore définis
+        if 'MGB' not in st.session_state:
+            st.session_state['MGB'] = ""
+        if 'confirm_11' not in st.session_state:
+            st.session_state['confirm_11'] = False
+
+        st.subheader("MGB :")
+        st.session_state['MGB'] = st.text_input("Entrer le numéro du MGB", st.session_state['MGB'])
+
+        def generate_qr(MGB):
+            qr_img = qrcode.make(MGB).convert("RGB")
+            qr_img = qr_img.resize((250, 250))
+            st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                buffer = BytesIO()
+                qr_img.save(buffer, format="PNG")
+                buffer.seek(0)
+                st.download_button(
+                    label="Télécharger le QR Code",
+                    data=buffer,
+                    file_name=f"QR_Code_{MGB}.png",
+                    mime="image/png"
+                )
+            with col2:
+                if st.button("Effacer le QR Code"):
+                    st.session_state['MGB'] = ""
+                    st.session_state['confirm_11'] = False
+
+        # Bouton principal
         if st.button("Générer le QR Code"):
+            MGB = st.session_state['MGB']
             if not MGB.isdigit():
                 st.error("Le MGB doit être un nombre.")
             elif len(MGB) == 12:
-                # QR Code normal pour 12 chiffres
-                qr_img = qrcode.make(MGB).convert("RGB")
-                qr_img = qr_img.resize((250, 250))
-                st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    buffer = BytesIO()
-                    qr_img.save(buffer, format="PNG")
-                    buffer.seek(0)
-                    st.download_button(
-                        label="Télécharger le QR Code",
-                        data=buffer,
-                        file_name=f"QR_Code_{MGB}.png",
-                        mime="image/png"
-                    )
-                with col2:
-                    if st.button("Effacer le QR Code"):
-                        st.session_state['MGB'] = ""
-
+                generate_qr(MGB)
             elif len(MGB) == 11:
-                # Demande de confirmation pour 11 chiffres
                 st.warning("Es-tu sûr que ton MGB n'a pas 12 chiffres ?")
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("Oui, générer le QR Code"):
-                        qr_img = qrcode.make(MGB).convert("RGB")
-                        qr_img = qr_img.resize((250, 250))
-                        st.image(qr_img, caption="QR Code du MGB", use_container_width=True)
-
-                        buffer = BytesIO()
-                        qr_img.save(buffer, format="PNG")
-                        buffer.seek(0)
-                        st.download_button(
-                            label="Télécharger le QR Code",
-                            data=buffer,
-                            file_name=f"QR_Code_{MGB}.png",
-                            mime="image/png"
-                        )
-                with col2:
-                    if st.button("Non"):
-                        st.info("Merci de remplir le champ correctement.")
+                st.session_state['confirm_11'] = True
             else:
-                st.error("Le MGB doit avoir 12 chiffres.")
+                st.error("Le MGB doit avoir 11 ou 12 chiffres.")
+
+        # Si confirmation pour 11 chiffres
+        if st.session_state['confirm_11']:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Oui, générer le QR Code"):
+                    generate_qr(st.session_state['MGB'])
+                    st.session_state['confirm_11'] = False
+            with col2:
+                if st.button("Non, corriger le MGB"):
+                    st.info("Merci de remplir le champ correctement.")
+                    st.session_state['confirm_11'] = False
         
     elif option == 'EAN':
         st.subheader("EAN :")
