@@ -32,7 +32,7 @@ def tab_QR_Codes():
         "Surgelé": ['A1','A2','A3','A4','B1','C1','D1'],
         "Marée": ['A1','A2','A3','A4']
     }
-    Liste_emplacement = [str(i) for i in range(1, 11)]
+    Liste_emplacement = [str(i) for i in range(1, 13)]
 
     # Choix du type de QR Code
     option = st.selectbox('Choix type de QR Code ou Code Barre :', options= Liste_choix_Qr_code)
@@ -43,14 +43,14 @@ def tab_QR_Codes():
         nb_qr_serie = st.radio("Choisir types :", ["Unités", "Série"])
         if nb_qr_serie == "Unités":
             if nb_qr_format == "Grand Format":
-                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 4))  # 1 à 3
+                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 101))
                 cols_per_row = 1
                 font_size = 38
                 frame_width = A4[0] - 20
                 frame_height = 273
                 spacing = 1
             else:
-                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 11))  # 1 à 10
+                qr_count = st.selectbox("Nombre de QR Codes :", range(1, 101))
                 cols_per_row = 2
                 font_size = 12
                 frame_width = (A4[0] - 130) / 2
@@ -58,14 +58,16 @@ def tab_QR_Codes():
                 spacing = 30
         else :
             if nb_qr_format == "Grand Format":
-                qr_count = 3
+                qr_count_serie = st.selectbox("Nombre de Série de QR Codes :", range(1, 11))
+                qr_count = 101
                 cols_per_row = 1
                 font_size = 38
                 frame_width = A4[0] - 20
                 frame_height = 273
                 spacing = 1
             else:
-                qr_count = 10
+                qr_count_serie = st.selectbox("Nombre de Série de QR Codes :", range(1, 11))
+                qr_count = 101
                 cols_per_row = 2
                 font_size = 12
                 frame_width = (A4[0] - 130) / 2
@@ -106,24 +108,26 @@ def tab_QR_Codes():
                 })
         
         else:
-            col1, col2, col3 = st.columns(3)
-            # Sélections communes
-            with col1:
-                cellule = st.selectbox("Cellule", options=list(Liste_allée.keys()), key="Cellule")
-            with col2:
-                allée = st.selectbox("Allée", options=Liste_allée[cellule], key="Allée")
-            with col3:
-                rangée = st.selectbox("Rangée", options=Liste_rangée, key="Rangée")
+            for i in range(qr_count_serie):
+                st.markdown(f"**Serie #{i+1}**")
+                col1, col2, col3 = st.columns(3)
+                # Sélections communes
+                with col1:
+                    cellule = st.selectbox("Cellule", options=list(Liste_allée.keys()), key=f"Cellule_{i}")
+                with col2:
+                    allée = st.selectbox("Allée", options=Liste_allée[cellule], key=f"Allée_{i}")
+                with col3:
+                    rangée = st.selectbox("Rangée", options=Liste_rangée, key=f"Rangée_{i}")
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown(f"**Choisi les Niveaux**")
-                niveau_start = st.selectbox("Niveau début", options=Liste_niveau[cellule], key="Niveau_start")
-                niveau_end = st.selectbox("Niveau fin", options=Liste_niveau[cellule], key="Niveau_end")
-            with col3:
-                st.markdown(f"**Choisi les Colonnes**")
-                col_start = st.selectbox("Colonne début", options=Liste_emplacement, key="Colonne_start")
-                col_end = st.selectbox("Colonne fin", options=Liste_emplacement, key="Colonne_end")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.markdown(f"**Choisi les Niveaux**")
+                    niveau_start = st.selectbox("Niveau début", options=Liste_niveau[cellule], key=f"Niveau_start_{i}")
+                    niveau_end = st.selectbox("Niveau fin", options=Liste_niveau[cellule], key=f"Niveau_end_{i}")
+                with col3:
+                    st.markdown(f"**Choisi les Colonnes**")
+                    col_start = st.selectbox("Colonne début", options=Liste_emplacement, key=f"Colonne_start_{i}")
+                    col_end = st.selectbox("Colonne fin", options=Liste_emplacement, key=f"Colonne_end_{i}")
 
             # Construire les plages
             niveaux = Liste_niveau[cellule]
