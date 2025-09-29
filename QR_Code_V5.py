@@ -129,37 +129,37 @@ def tab_QR_Codes():
                     col_start = st.selectbox("Colonne début", options=Liste_emplacement, key=f"Colonne_start_{i}")
                     col_end = st.selectbox("Colonne fin", options=Liste_emplacement, key=f"Colonne_end_{i}")
 
-            # Construire les plages
-            niveaux = Liste_niveau[cellule]
-            colonnes = Liste_emplacement
+                # Construire les plages
+                niveaux = Liste_niveau[cellule]
+                colonnes = Liste_emplacement
 
-            try:
-                start_idx_niv = niveaux.index(niveau_start)
-                end_idx_niv = niveaux.index(niveau_end)
-                start_idx_col = colonnes.index(col_start)
-                end_idx_col = colonnes.index(col_end)
+                try:
+                    start_idx_niv = niveaux.index(niveau_start)
+                    end_idx_niv = niveaux.index(niveau_end)
+                    start_idx_col = colonnes.index(col_start)
+                    end_idx_col = colonnes.index(col_end)
 
-                niveaux_range = niveaux[min(start_idx_niv, end_idx_niv): max(start_idx_niv, end_idx_niv)+1]
-                colonnes_range = colonnes[min(start_idx_col, end_idx_col): max(start_idx_col, end_idx_col)+1]
+                    niveaux_range = niveaux[min(start_idx_niv, end_idx_niv): max(start_idx_niv, end_idx_niv)+1]
+                    colonnes_range = colonnes[min(start_idx_col, end_idx_col): max(start_idx_col, end_idx_col)+1]
 
-                total_etiquettes = len(niveaux_range) * len(colonnes_range)
+                    total_etiquettes = len(niveaux_range) * len(colonnes_range)
 
-                if total_etiquettes > qr_count:
-                    st.error(f"⚠️ Trop d’étiquettes ({total_etiquettes}), maximum autorisé : {qr_count}")
-                else:
-                    for niv in niveaux_range:
-                        for col in colonnes_range:
-                            qr_infos.append({
-                                "Cellule": cellule,
-                                "Allée": allée,
-                                "Rangée": rangée,
-                                "Niveau": niv,
-                                "Colonne": col
-                            })
-                            
+                    if total_etiquettes > qr_count:
+                        st.error(f"⚠️ Trop d’étiquettes ({total_etiquettes}), maximum autorisé : {qr_count}")
+                    else:
+                        for niv in niveaux_range:
+                            for col in colonnes_range:
+                                qr_infos.append({
+                                    "Cellule": cellule,
+                                    "Allée": allée,
+                                    "Rangée": rangée,
+                                    "Niveau": niv,
+                                    "Colonne": col
+                                })
+                                
 
-            except ValueError:
-                st.error("Erreur : les valeurs choisies ne sont pas dans les listes disponibles.")
+                except ValueError:
+                    st.error("Erreur : les valeurs choisies ne sont pas dans les listes disponibles.")
 
         # --- Génération PDF ---
         if st.button("Générer le PDF A4"):
