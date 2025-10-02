@@ -463,11 +463,12 @@ def Analyse_stock():
             df_ecart_stock_last = pd.read_excel(file_last)
 
         # Dossier où se trouvent les fichiers principaux
-        base_path = Path(BASE_DIR) / "data"
+        base_path = Path(BASE_DIR) / "Data"
 
         # Vérification des fichiers principaux
         file_article = base_path / "Article_€.xlsx"
         file_inventaire = base_path / "Inventory_21_09_2025.xlsx"
+        
 
         if file_inventaire.exists():
             df_inventaire = pd.read_excel(file_inventaire, header=None)
@@ -507,7 +508,6 @@ def Analyse_stock():
             "Difference": "Difference_MMS-WMS"
         })
         df_ecart_stock_prev['MGB_6'] = df_ecart_stock_prev['MGB_6'].astype(str)
-
         for col in ["MMS_Stock","WMS_Stock","Difference_MMS-WMS"]:
             df_ecart_stock_prev[col] = pd.to_numeric(df_ecart_stock_prev[col], errors='coerce')
 
@@ -523,13 +523,11 @@ def Analyse_stock():
         df_ecart_stock_last['MGB_6'] = df_ecart_stock_last['MGB_6'].astype(str)
 
         colonnes_a_ajouter = ["Date_Dernier_Commentaire", "Commentaire"]
-
         for col in colonnes_a_ajouter:
             if col not in df_ecart_stock_last.columns:
                 df_ecart_stock_last[col] = None
             else:
-            # S'assurer que les valeurs manquantes restent NaN au lieu de réinitialiser
-                df_ecart_stock_last[col] = df_ecart_stock_last[col].where(df_ecart_stock_last[col].notna(), None) 
+                df_ecart_stock_last[col] = df_ecart_stock_last[col].where(df_ecart_stock_last[col].notna(), None)
 
         for col in ["MMS_Stock","WMS_Stock","Difference_MMS-WMS"]:
             df_ecart_stock_last[col] = pd.to_numeric(df_ecart_stock_last[col], errors='coerce')
@@ -537,14 +535,9 @@ def Analyse_stock():
         df_ecart_stock_last['Deja_Present'] = df_ecart_stock_last['MGB_6'].isin(df_ecart_stock_prev['MGB_6'])
 
         # --- INVENTAIRE ---
-        #st.write(df_inventaire.columns)
-        # Split de la première colonne
         df_inventaire = df_inventaire.iloc[:, 0].str.split(',', expand=True)
-
-        # Optionnel : si tu sais que la première ligne contient les noms de colonnes
-        df_inventaire.columns = df_inventaire.iloc[0]   # définit la première ligne comme header
+        df_inventaire.columns = df_inventaire.iloc[0]
         df_inventaire = df_inventaire[1:].reset_index(drop=True)
-
         df_inventaire = df_inventaire.rename(columns={
             "SubSys": "Ref_MERTO",
             "Initial Quantity": "Initial_Quantity",
@@ -559,8 +552,9 @@ def Analyse_stock():
 
         remplacement = {"Å“": "œ", "Ã‚": "â", "Ã´": "ô", "Ã¨": "ë", "Ã¢": "â", "Ã§": "ç",
                         "Ãª": "ê", "Ã®": "î", "Ã©": "é", "Â°": "°", "Ã": "à", "¤": "", "«": "", "»": ""}
-        for ancien, nouveau in remplacement.items():
-            df_inventaire["Description"] = df_inventaire["Description"].str.replace(ancien, nouveau, regex=False)
+        if 'Description' in df_inventaire.columns:
+            for ancien, nouveau in remplacement.items():
+                df_inventaire["Description"] = df_inventaire["Description"].str.replace(ancien, nouveau, regex=False)
 
         # --- MVT STOCK ---
         df_mvt_stock = df_mvt_stock.drop(columns=[
@@ -595,17 +589,15 @@ def Analyse_stock():
             "art_mgb12": "MGB"
         })
 
-        # Liste des colonnes dans l'ordre souhaité
-        nouvel_ordre = ["Date", "Heure", "Code_Agent","MGB","MGB_6", "Désignation", "SV", "SA", "GA", "Ref_MERTO", "Au_Kg", "SSCC", "Type_Mouvement","Code_Mouvement",
-                        "Intituler_Mouvement", "Info_Mouvement", 'Synchro_MMS',"Cellule", "Conditionnement_Vente", "Conditionnement_Fournisseur", "Cellule",'prefix_emplacement',"Emplacement",
-                        "Qty_Mouvement"]
-
-        # Réordonner les colonnes
+        # Liste des colonnes dans l'ordre souhaité et suppression des doublons
+        nouvel_ordre = ["Date", "Heure", "Code_Agent","MGB","MGB_6", "Désignation", "SV", "SA", "GA", "Ref_MERTO",
+                        "Au_Kg", "SSCC", "Type_Mouvement","Code_Mouvement","Intituler_Mouvement", "Info_Mouvement",
+                        'Synchro_MMS',"Cellule", "Conditionnement_Vente", "Conditionnement_Fournisseur",
+                        'prefix_emplacement',"Emplacement","Qty_Mouvement"]
+        nouvel_ordre = list(dict.fromkeys(nouvel_ordre))  # supprime les doublons
         df_mvt_stock = df_mvt_stock[nouvel_ordre]
 
-        # remplacer dans df_mvt_stock['Synchro_MMS'] le 1 par oui et le 0 par non :
         df_mvt_stock['Synchro_MMS'] = df_mvt_stock['Synchro_MMS'].replace({1: 'Oui', 0: 'Non'})
-
         df_mvt_stock['Type_Mouvement'] = df_mvt_stock['Type_Mouvement'].replace({
             'DELETE_STOCK': 'Modification_Stock',
             'EDIT_QUANTITY': 'Suppression_Stock',
@@ -615,7 +607,7 @@ def Analyse_stock():
         })
         df_mvt_stock['Info_Mouvement'] = df_mvt_stock['Info_Mouvement'].str.upper()
         df_mvt_stock['MGB_6'] = df_mvt_stock['MGB_6'].astype(str)
-            
+
         # --- RECEPTION ---
         df_reception = df_reception.drop(columns=['ste_nr','SSGA','job_type_fr','job_id','job_begin_datetime','job_started_datetime',
             'var_nr','bdl_nr','SGA','art_weight_gross','art_weight_gross_cust','art_weight_net',
@@ -630,7 +622,6 @@ def Analyse_stock():
         df_reception["Code_Agent"] = df_reception["emp_upn"].str.split(".", expand=True)[0]
         df_reception = df_reception.drop(columns=['emp_upn'])
         
-            # Renommer les colonnes
         df_reception = df_reception.rename(columns={
             "art_subsys": "Ref_MERTO",
             "CCVM": "Conditionnement_Vente",
@@ -645,19 +636,15 @@ def Analyse_stock():
             "type_recep": "Type_Recep"
         })
 
-        #créer des MGB_6 dans tout les df :
         df_reception['MGB'] = df_reception['MGB'].astype(str)
         df_reception['MGB_6'] = df_reception['MGB'].str[:-6]
 
-        # Liste des colonnes dans l'ordre souhaité
         nouvel_ordre = [
             "Date", "Heure", "Code_Agent", "MGB","MGB_6", "Désignation","SV", "SA", "GA",
             "Ref_MERTO", "Conditionnement_Vente", "Conditionnement_Fournisseur","Au_Kg", "SSCC",
             "Date_Camion", "N°_Camion", "Cellule",  "Type_Recep","Qty_Reception", "Qty_Colis_Reception"
         ]
-
-        # Réordonner les colonnes
-        df_reception = df_reception[nouvel_ordre]        
+        df_reception = df_reception[nouvel_ordre]
 
         # --- SORTIES ---
         df_sorties = df_sorties.drop(columns=[
@@ -665,7 +652,6 @@ def Analyse_stock():
             'ord_line_code','ord_qty_follow','art_pick_tool','art_pick_area','art_pick_id','type_UO','unites_pickees','nb_UO',
             'cre_date','upd_date','art_weight_gross_cust'
         ], errors='ignore')
-
 
         df_sorties[["Date", "Heure"]] = df_sorties["art_pick_datetime"].str.split(" ", expand=True)
         df_sorties = df_sorties.drop(columns=['art_pick_datetime'])
@@ -675,7 +661,6 @@ def Analyse_stock():
         df_sorties = df_sorties.drop(columns=['art_picker_upn'])
         df_sorties['Qty/Article/Poids'] = pd.to_numeric(df_sorties['art_pick_qty'], errors='coerce')
 
-        # Renommer les colonnes
         df_sorties = df_sorties.rename(columns={
             'dlv_date': "Date_de_livraison",
             'ord_qty' : "Qty_Commandé",
@@ -689,21 +674,93 @@ def Analyse_stock():
         df_sorties['MGB'] = df_sorties['art_mgb12'].astype(str)
         df_sorties['MGB_6'] = df_sorties['MGB'].str[:-6]
 
-        # Liste des colonnes dans l'ordre souhaité
         nouvel_ordre_s = [
             "Date", "Heure", "Date_de_livraison", "Code_Agent", "MGB","MGB_6", "Désignation","SV",
             "Ref_MERTO","Au_Kg","Qty_Commandé","Qty_Total_Préparé","Qty/Article/Poids", "Cellule",  "Emplacement"
         ]
-
-        # Réordonner les colonnes
         df_sorties = df_sorties[nouvel_ordre_s]
 
         # --- ARTICLES €---
-        # Optionnel : si tu sais que la première ligne contient les noms de colonnes
-        df_article_euros.columns = df_article_euros.iloc[0]   # définit la première ligne comme header
+        df_article_euros.columns = df_article_euros.iloc[0]
         df_article_euros = df_article_euros[1:].reset_index(drop=True)
         df_article_euros = df_article_euros.rename(columns= {"€ Unitaire" : "Prix_Unitaire"})
 
+        # ==================================================
+        # AJOUT PRIX + AU_KG + VALEUR DIFFÉRENCE
+        # ==================================================
+        # Ajouter prix et valeur totale
+        def add_price_and_value(df_target, df_price, target_key, price_key, quantity_col, value_col='Valeur_du_Stock', price_col='Prix_Unitaire', display_in_streamlit=True):
+            if df_target.empty or df_price.empty:
+                df_target[value_col] = 0
+                return df_target
+
+            df_target[target_key] = df_target[target_key].astype(str)
+            df_price[price_key] = df_price[price_key].astype(str)
+
+            df_target = df_target.merge(
+                df_price[[price_key, price_col]],
+                left_on=target_key,
+                right_on=price_key,
+                how='left'
+            )
+            df_target = df_target.drop(columns=[price_key])
+            df_target[value_col] = df_target[quantity_col] * df_target[price_col]
+
+            if display_in_streamlit:
+                st.dataframe(df_target.style.format({price_col: "{:.2f}", value_col: "{:.2f}"}))
+
+            return df_target
+        # --- Valeur Difference ---
+        df_inventaire = add_price_and_value(df_inventaire, df_article_euros, 'Ref_MERTO', 'ref', 'Inventaire_Final_Quantity', display_in_streamlit=False)
+        df_reception = add_price_and_value(df_reception, df_article_euros, 'Ref_MERTO', 'ref', 'Qty_Reception', display_in_streamlit=False)
+        df_sorties = add_price_and_value(df_sorties, df_article_euros, 'Ref_MERTO', 'ref', 'Qty/Article/Poids', display_in_streamlit=False)
+        df_mvt_stock = add_price_and_value(df_mvt_stock, df_article_euros, 'Ref_MERTO', 'ref', 'Qty_Mouvement', display_in_streamlit=False)
+        
+        mapping_inventaire = df_inventaire[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
+        mapping_reception = df_reception[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
+        mapping_mvt = df_mvt_stock[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
+        mapping_global = pd.concat([mapping_inventaire, mapping_reception, mapping_mvt]).drop_duplicates(subset='MGB_6', keep='first')
+
+        # fusionner pour ajouter Prix_Unitaire à df_ecart_stock_last**
+        df_ecart_stock_last = df_ecart_stock_last.merge(mapping_global, on='MGB_6', how='left')
+
+        df_ecart_stock_last['Valeur_Difference'] = df_ecart_stock_last['Prix_Unitaire'] * df_ecart_stock_last['Difference_MMS-WMS']
+        df_ecart_stock_last['Valeur_Difference'] = pd.to_numeric(df_ecart_stock_last['Valeur_Difference'], errors='coerce').round(2)
+
+        # --- Valeur AU_KG ---
+
+        mapping_aukg_reception = df_reception[['MGB_6', 'Au_Kg']].drop_duplicates()
+        mapping_aukg_mvt = df_mvt_stock[['MGB_6', 'Au_Kg']].drop_duplicates()
+        mapping_aukg_sorties = df_sorties[['MGB_6', 'Au_Kg']].drop_duplicates()
+        mapping_aukg_global = pd.concat([mapping_aukg_reception, mapping_aukg_mvt, mapping_aukg_sorties]).drop_duplicates(subset='MGB_6', keep='first')
+
+        df_ecart_stock_last = df_ecart_stock_last.merge(mapping_aukg_global, on='MGB_6', how='left')
+        
+        # --- Typage conditionnel selon Au_Kg ---
+        if "Au_Kg" in df_ecart_stock_last.columns:
+            for col in ["MMS_Stock", "WMS_Stock", "Difference_MMS-WMS"]:
+                # Au_Kg > 0 → float
+                df_ecart_stock_last.loc[df_ecart_stock_last["Au_Kg"].notna() & (df_ecart_stock_last["Au_Kg"] > 0), col] = (
+                    pd.to_numeric(df_ecart_stock_last.loc[df_ecart_stock_last["Au_Kg"].notna() & (df_ecart_stock_last["Au_Kg"] > 0), col], errors="coerce")
+                    .astype(float)
+                )
+                # Au_Kg <= 0 ou NaN → int
+                df_ecart_stock_last.loc[df_ecart_stock_last["Au_Kg"].isna() | (df_ecart_stock_last["Au_Kg"] <= 0), col] = (
+                    pd.to_numeric(df_ecart_stock_last.loc[df_ecart_stock_last["Au_Kg"].isna() | (df_ecart_stock_last["Au_Kg"] <= 0), col], errors="coerce")
+                    .fillna(0)
+                    .astype(int)
+                )
+        else:
+            for col in ["MMS_Stock", "WMS_Stock", "Difference_MMS-WMS"]:
+                df_ecart_stock_last[col] = pd.to_numeric(df_ecart_stock_last[col], errors="coerce").fillna(0).astype(int)
+
+        # --- Réordonner colonnes finales ---
+        nouvel_ordre = ["MGB_6", "Désignation", "MMS_Stock", "WMS_Stock", "Difference_MMS-WMS", 
+                        'Au_Kg', "Deja_Present", 'Prix_Unitaire', 'Valeur_Difference', 
+                        "Date_Dernier_Commentaire", "Commentaire"]
+        
+        df_ecart_stock_last = df_ecart_stock_last[[col for col in nouvel_ordre if col in df_ecart_stock_last.columns]]
+        
         # --- Supprimer les colonnes dupliquées après preprocess ---
         df_mvt_stock = remove_duplicate_columns(df_mvt_stock)
         df_reception = remove_duplicate_columns(df_reception)
@@ -740,29 +797,6 @@ def Analyse_stock():
             return 'LITIGES-' + row['Emplacement']
         else:
             return row.get('Emplacement', '')
-
-    # Ajouter prix et valeur totale
-    def add_price_and_value(df_target, df_price, target_key, price_key, quantity_col, value_col='Valeur_du_Stock', price_col='Prix_Unitaire', display_in_streamlit=True):
-        if df_target.empty or df_price.empty:
-            df_target[value_col] = 0
-            return df_target
-
-        df_target[target_key] = df_target[target_key].astype(str)
-        df_price[price_key] = df_price[price_key].astype(str)
-
-        df_target = df_target.merge(
-            df_price[[price_key, price_col]],
-            left_on=target_key,
-            right_on=price_key,
-            how='left'
-        )
-        df_target = df_target.drop(columns=[price_key])
-        df_target[value_col] = df_target[quantity_col] * df_target[price_col]
-
-        if display_in_streamlit:
-            st.dataframe(df_target.style.format({price_col: "{:.2f}", value_col: "{:.2f}"}))
-
-        return df_target
     
     # --- Main Streamlit ---
 
@@ -776,61 +810,6 @@ def Analyse_stock():
         df_mvt_stock['Emplacement'] = df_mvt_stock.apply(update_emplacement, axis=1)
         df_mvt_stock = df_mvt_stock.drop(columns=['prefix_emplacement'], errors='ignore')
     
-    # Ajouter valeurs des stocks
-    df_inventaire = add_price_and_value(df_inventaire, df_article_euros, 'Ref_MERTO', 'ref', 'Inventaire_Final_Quantity', display_in_streamlit=False)
-    df_reception = add_price_and_value(df_reception, df_article_euros, 'Ref_MERTO', 'ref', 'Qty_Reception', display_in_streamlit=False)
-    df_sorties = add_price_and_value(df_sorties, df_article_euros, 'Ref_MERTO', 'ref', 'Qty/Article/Poids', display_in_streamlit=False)
-    df_mvt_stock = add_price_and_value(df_mvt_stock, df_article_euros, 'Ref_MERTO', 'ref', 'Qty_Mouvement', display_in_streamlit=False)
-
-    # Créer des mappings MGB_6 -> € Unitaire depuis les 3 tableaux
-    mapping_inventaire = df_inventaire[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
-    mapping_reception = df_reception[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
-    mapping_mvt = df_mvt_stock[['MGB_6', 'Prix_Unitaire']].drop_duplicates()
-
-    # Concaténer les mappings pour faire un mapping global
-    mapping_global = pd.concat([mapping_inventaire, mapping_reception, mapping_mvt])
-
-    # Supprimer les doublons en gardant le premier (priorité inventaire > réception > mouvements)
-    mapping_global = mapping_global.drop_duplicates(subset='MGB_6', keep='first')
-
-    # Créer des mappings MGB_6 -> Au_Kg depuis les 3 tableaux
-    mapping_aukg_reception = df_reception[['MGB_6', 'Au_Kg']].drop_duplicates()
-    mapping_aukg_mvt = df_mvt_stock[['MGB_6', 'Au_Kg']].drop_duplicates()
-    mapping_aukg_sorties = df_sorties[['MGB_6', 'Au_Kg']].drop_duplicates()
-
-    # Concaténer les mappings pour faire un mapping global
-    mapping_aukg_global = pd.concat([mapping_aukg_reception, mapping_aukg_mvt, mapping_aukg_sorties])
-
-    # Supprimer les doublons en gardant le premier (priorité réception > mouvements > sorties)
-    mapping_aukg_global = mapping_aukg_global.drop_duplicates(subset='MGB_6', keep='first')
-
-    # Ajouter la colonne Au_Kg dans df_ecart_stock
-    df_ecart_stock_last = df_ecart_stock_last.merge(
-        mapping_aukg_global,
-        on='MGB_6',
-        how='left'
-    )
-
-    # Ajouter le prix dans df_ecart_stock
-    df_ecart_stock_last = df_ecart_stock_last.merge(
-        mapping_global,
-        on='MGB_6',
-        how='left'
-    )
-    # Ajouter le valeur de la differance 
-    df_ecart_stock_last['Valeur_Difference'] = df_ecart_stock_last['Prix_Unitaire'] * df_ecart_stock_last['Difference_MMS-WMS']
-    # Convertir en numérique, les valeurs invalides deviennent NaN
-    df_ecart_stock_last['Valeur_Difference'] = pd.to_numeric(df_ecart_stock_last['Valeur_Difference'], errors='coerce')
-
-    # Maintenant tu peux arrondir
-    df_ecart_stock_last['Valeur_Difference'] = df_ecart_stock_last['Valeur_Difference'].round(2)
-
-    # Liste des colonnes dans l'ordre souhaité
-    nouvel_ordre = ["MGB_6", "Désignation", "MMS_Stock", "WMS_Stock", "Difference_MMS-WMS", 'Au_Kg',"Deja_Present",'Prix_Unitaire','Valeur_Difference', "Date_Dernier_Commentaire", "Commentaire"]
-
-    # Réordonner les colonnes
-    df_ecart_stock_last = df_ecart_stock_last[nouvel_ordre]
-
     # Afficher le tableau des écarts
 
     st.subheader("Tableau des écarts")
@@ -955,7 +934,7 @@ def Analyse_stock():
     mgb_selected = col1.selectbox("Choisir un MGB", mgb_list)
 
     # Filtrer les DataFrames
-    stock_info = df_ecart_stock[df_ecart_stock['MGB_6'] == mgb_selected]
+    stock_info = df_ecart_stock_last[df_ecart_stock_last['MGB_6'] == mgb_selected]
     inventaire_info = df_inventaire[df_inventaire['MGB_6'] == mgb_selected]
     mvt_stock_info = df_mvt_stock[df_mvt_stock['MGB_6'] == mgb_selected]
     reception_info = df_reception[df_reception['MGB_6'] == mgb_selected]
@@ -1132,7 +1111,7 @@ def Analyse_stock():
 
         # 🔹 Génération PDF
         col_widths = [80, 20, 20, 40, 110]
-        headers = ["Désignation", "MGB_6", "Difference", "Date Commentaire", "Commentaire"]
+        headers = ["MGB_6", "Désignation", "Difference", "Date Commentaire", "Commentaire"]
 
         pdf = PDF(headers, col_widths)
         pdf.set_auto_page_break(auto=True, margin=20)
@@ -1140,8 +1119,8 @@ def Analyse_stock():
         pdf.set_font("Arial", "", 9)
 
         for _, row in df_for_pdf.iterrows():
-            pdf.cell(col_widths[0], 8, str(row["Désignation"]), border=1)
-            pdf.cell(col_widths[1], 8, str(row["MGB_6"]), border=1, align="C")
+            pdf.cell(col_widths[0], 8, str(row["MGB_6"]), border=1, align="C")
+            pdf.cell(col_widths[1], 8, str(row["Désignation"]), border=1)
             pdf.cell(col_widths[2], 8, str(round(row["Difference_MMS-WMS"], 2)), border=1, align="C")
             pdf.cell(col_widths[3], 8, str(row["Date_Dernier_Commentaire"]), border=1, align="C")
 
