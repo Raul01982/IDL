@@ -987,7 +987,7 @@ def Analyse_stock():
     st.divider()
 
 
-    # 1️⃣ Initialisation dans la session
+    # Initialisation dans la session
     if "df_comments" not in st.session_state:
         if os.path.exists(file_last):
             df_existing = pd.read_excel(file_last)
@@ -1038,7 +1038,7 @@ def Analyse_stock():
             st.session_state.df_comments = df_ecart_stock_last.copy()
 
 
-    # 2️⃣ Ajouter un commentaire
+    # Ajouter un commentaire
     mgb_text = f"{mgb_selected} - {stock_info.iloc[0]['Désignation'] if not stock_info.empty else ''}"
 
     # Utilisation de Markdown avec HTML pour forcer la taille
@@ -1077,7 +1077,7 @@ def Analyse_stock():
                 st.success(f"✅ Commentaire mis à jour pour {mgb_selected} - {stock_info.iloc[0]['Désignation']} avec la date {today} !")
 
     # --------------------------
-    # 📄 Classe PDF personnalisée
+    # Classe PDF personnalisée
     # --------------------------
     class PDF(FPDF):
         def __init__(self, headers, col_widths):
@@ -1102,15 +1102,19 @@ def Analyse_stock():
             self.set_font("Arial", "I", 8)
             self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-    # 3️⃣ Générer le PDF et sauvegarder Excel en même temps
+    # Générer le PDF et sauvegarder Excel en même temps
     if st.button("Générer le PDF et sauvegarder Excel"):
-        df_for_pdf = st.session_state.df_comments.fillna("")  # récupération de la copie à jour
+        # 🔹 Filtrer pour ne garder que les lignes avec une date commentaire
+        df_for_pdf = st.session_state.df_comments[
+            st.session_state.df_comments['Date_Dernier_Commentaire'].notna() & 
+            (st.session_state.df_comments['Date_Dernier_Commentaire'] != '')
+        ].fillna("")  # remplissage des autres valeurs vides avec ""
 
         # 🔹 Export Excel
         df_for_pdf.to_excel(file_last, index=False)
 
         # 🔹 Génération PDF
-        col_widths = [80, 20, 20, 40, 110]
+        col_widths = [20, 80, 20, 40, 110]
         headers = ["MGB_6", "Désignation", "Difference", "Date Commentaire", "Commentaire"]
 
         pdf = PDF(headers, col_widths)
@@ -1139,7 +1143,7 @@ def Analyse_stock():
         st.download_button(
             label="📥 Télécharger le PDF",
             data=pdf_buffer,
-            file_name="rapport_utilisateurs.pdf",
+            file_name=f"rapport_ecart_{today}.pdf",
             mime="application/pdf"
         )
 
