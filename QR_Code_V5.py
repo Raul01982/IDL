@@ -535,6 +535,7 @@ def Analyse_stock():
         df_ecart_stock_last['Deja_Present'] = df_ecart_stock_last['MGB_6'].isin(df_ecart_stock_prev['MGB_6'])
 
         # --- INVENTAIRE ---
+        st.write(df_inventaire.columns)
         # Split de la première colonne
         df_inventaire = df_inventaire[0].str.split(',', expand=True)
 
@@ -1050,7 +1051,14 @@ def Analyse_stock():
 
 
     # 2️⃣ Ajouter un commentaire
-    st.title(f"Ajouter un commentaire à la ligne {mgb_selected} - {stock_info.iloc[0]['Désignation'] if not stock_info.empty else ''} ")
+    mgb_text = f"{mgb_selected} - {stock_info.iloc[0]['Désignation'] if not stock_info.empty else ''}"
+
+    # Utilisation de Markdown avec HTML pour forcer la taille
+    st.markdown(f"""
+    <h1 style='font-size:2.5em'>
+    Ajouter un commentaire à la ligne :<br>{mgb_text}
+    </h1>
+    """, unsafe_allow_html=True)
 
     commentaire = st.text_area("Écrire votre commentaire :")
 
