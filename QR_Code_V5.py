@@ -472,11 +472,13 @@ def Analyse_stock():
         if file_inventaire.exists():
             df_inventaire = pd.read_excel(file_inventaire, header=None)
         else:
+            st.warning("df_inventaire est vide, rien à traiter")
             df_inventaire = pd.DataFrame()
 
         if file_article.exists():
             df_article_euros = pd.read_excel(file_article, header=None)
         else:
+            st.warning("df_article_euros est vide, rien à traiter")
             df_article_euros = pd.DataFrame()
 
         return df_mvt_stock, df_reception, df_sorties, df_inventaire, df_ecart_stock_last, df_ecart_stock_prev, df_article_euros, file_last
@@ -803,31 +805,31 @@ def Analyse_stock():
     mapping_aukg_global = mapping_aukg_global.drop_duplicates(subset='MGB_6', keep='first')
 
     # Ajouter la colonne Au_Kg dans df_ecart_stock
-    df_ecart_stock = df_ecart_stock_last.merge(
+    df_ecart_stock_last = df_ecart_stock_last.merge(
         mapping_aukg_global,
         on='MGB_6',
         how='left'
     )
 
     # Ajouter le prix dans df_ecart_stock
-    df_ecart_stock = df_ecart_stock.merge(
+    df_ecart_stock_last = df_ecart_stock_last.merge(
         mapping_global,
         on='MGB_6',
         how='left'
     )
     # Ajouter le valeur de la differance 
-    df_ecart_stock['Valeur_Difference'] = df_ecart_stock['Prix_Unitaire'] * df_ecart_stock['Difference_MMS-WMS']
+    df_ecart_stock_last['Valeur_Difference'] = df_ecart_stock_last['Prix_Unitaire'] * df_ecart_stock_last['Difference_MMS-WMS']
     # Convertir en numérique, les valeurs invalides deviennent NaN
-    df_ecart_stock['Valeur_Difference'] = pd.to_numeric(df_ecart_stock['Valeur_Difference'], errors='coerce')
+    df_ecart_stock_last['Valeur_Difference'] = pd.to_numeric(df_ecart_stock_last['Valeur_Difference'], errors='coerce')
 
     # Maintenant tu peux arrondir
-    df_ecart_stock['Valeur_Difference'] = df_ecart_stock['Valeur_Difference'].round(2)
+    df_ecart_stock_last['Valeur_Difference'] = df_ecart_stock_last['Valeur_Difference'].round(2)
 
     # Liste des colonnes dans l'ordre souhaité
     nouvel_ordre = ["MGB_6", "Désignation", "MMS_Stock", "WMS_Stock", "Difference_MMS-WMS", 'Au_Kg',"Deja_Present",'Prix_Unitaire','Valeur_Difference', "Date_Dernier_Commentaire", "Commentaire"]
 
     # Réordonner les colonnes
-    df_ecart_stock = df_ecart_stock[nouvel_ordre]
+    df_ecart_stock_last = df_ecart_stock_last[nouvel_ordre]
 
     # Afficher le tableau des écarts
 
@@ -844,8 +846,8 @@ def Analyse_stock():
     options_5 = ["Toutes", "Positives", "Négatives"]
 
     filtres = {
-        "WMS_Stock": {"col": cols[1], "options": options_1, "type": "numeric"},
-        "MMS_Stock": {"col": cols[0], "options": options_4, "type": "numeric"},
+        "WMS_Stock": {"col": cols[1], "options": options_4, "type": "numeric"},
+        "MMS_Stock": {"col": cols[0], "options": options_1, "type": "numeric"},
         "Au_Kg": {"col": cols[2], "options": options_2, "type": "bool"},
         "Difference_MMS-WMS_Valeur": {"col": cols[3], "options": options_3, "type": "range", "df_col": "Difference_MMS-WMS"},
         "Difference_MMS-WMS_+/-": {"col": cols[4], "options": options_5, "type": "numeric", "df_col": "Difference_MMS-WMS"},
@@ -889,7 +891,7 @@ def Analyse_stock():
     )
 
     # --- Appliquer les filtres ---
-    df_filtered = df_ecart_stock.copy()
+    df_filtered = df_ecart_stock_last.copy()
 
     for key, filt in filtres.items():
         val = st.session_state[f"filter_{key}"]
@@ -902,6 +904,13 @@ def Analyse_stock():
                 df_filtered = df_filtered[df_filtered[df_col] < 0]
             elif val == "Zéro":
                 df_filtered = df_filtered[df_filtered[df_col] == 0]
+        
+        elif filt["type"] == "bool":
+            if val == "Oui":
+                df_filtered = df_filtered[df_filtered[df_col] == True]
+            elif val == "Non":
+                # Tout ce qui n'est pas True devient Non
+                df_filtered = df_filtered[df_filtered[df_col] != True]
 
         elif filt["type"] == "range":
             ranges = {
