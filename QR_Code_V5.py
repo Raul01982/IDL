@@ -535,9 +535,9 @@ def Analyse_stock():
         df_ecart_stock_last['Deja_Present'] = df_ecart_stock_last['MGB_6'].isin(df_ecart_stock_prev['MGB_6'])
 
         # --- INVENTAIRE ---
-        st.write(df_inventaire.columns)
+        #st.write(df_inventaire.columns)
         # Split de la première colonne
-        df_inventaire = df_inventaire[0].str.split(',', expand=True)
+        df_inventaire = df_inventaire.iloc[:, 0].str.split(',', expand=True)
 
         # Optionnel : si tu sais que la première ligne contient les noms de colonnes
         df_inventaire.columns = df_inventaire.iloc[0]   # définit la première ligne comme header
@@ -1060,19 +1060,34 @@ def Analyse_stock():
     </h1>
     """, unsafe_allow_html=True)
 
-    commentaire = st.text_area("Écrire votre commentaire :")
+    df_temp = st.session_state.df_comments
+    index = df_temp.index[df_temp["MGB_6"] == mgb_selected][0]
+    commentaire_existant = df_temp.at[index, "Commentaire"]
 
-    if st.button("Ajouter le commentaire"):
-        df_temp = st.session_state.df_comments
-        index = df_temp.index[df_temp["MGB_6"] == mgb_selected][0]
-        today = datetime.today().strftime("%d-%m-%Y")
+    # Vérifie si le commentaire est NaN
+    if pd.isna(commentaire_existant):
+        # Pas de commentaire existant
+        commentaire = st.text_area("Écrire votre commentaire :")
+        if st.button("Ajouter le commentaire"):
+            today = datetime.today().strftime("%d-%m-%Y")
+            df_temp.at[index, "Commentaire"] = commentaire
+            df_temp.at[index, "Date_Dernier_Commentaire"] = today
+            st.session_state.df_comments = df_temp
+            st.success(f"✅ Commentaire ajouté pour {mgb_selected} - {stock_info.iloc[0]['Désignation']} avec la date {today} !")
+    else:
+        # Commentaire existant
+        st.write(f"💬 Commentaire actuel : {commentaire_existant}")
+        modifier = st.radio("Voulez-vous changer ce commentaire ?", ("Non", "Oui"))
 
-        # Mise à jour en mémoire
-        df_temp.at[index, "Commentaire"] = commentaire
-        df_temp.at[index, "Date_Dernier_Commentaire"] = today
-        st.session_state.df_comments = df_temp
+        if modifier == "Oui":
+            commentaire = st.text_area("Écrire votre nouveau commentaire :", commentaire_existant)
+            if st.button("Mettre à jour le commentaire"):
+                today = datetime.today().strftime("%d-%m-%Y")
+                df_temp.at[index, "Commentaire"] = commentaire
+                df_temp.at[index, "Date_Dernier_Commentaire"] = today
+                st.session_state.df_comments = df_temp
+                st.success(f"✅ Commentaire mis à jour pour {mgb_selected} - {stock_info.iloc[0]['Désignation']} avec la date {today} !")
 
-        st.success(f"✅ Commentaire ajouté pour {mgb_selected} - {stock_info.iloc[0]['Désignation']} avec la date {today} !")
     # --------------------------
     # 📄 Classe PDF personnalisée
     # --------------------------
