@@ -1136,9 +1136,9 @@ def Analyse_stock():
             pdf.ln(max(8, y_after - y_before))
 
         # Export PDF
-        pdf_buffer = io.BytesIO()
-        pdf.output(pdf_buffer)
-        pdf_buffer.seek(0)
+        pdf_data = pdf.output(dest="S").encode("latin1")
+        pdf_buffer = io.BytesIO(pdf_data)
+
 
         st.download_button(
             label="📥 Télécharger le PDF",
